@@ -1,19 +1,12 @@
 package org.nft.builder.gui;
 
-import ij.IJ;
-import ij.ImagePlus;
-import ij.ImageStack;
-import ij.process.ImageProcessor;
 import org.springframework.stereotype.Component;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
-import javax.tools.Tool;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
-import java.util.stream.Collectors;
-import java.util.List;
 
 @Component
 public class Canvas extends JPanel {
@@ -41,13 +34,18 @@ public class Canvas extends JPanel {
     }
 
     public void addPicture(String path) {
-        ImagePlus img = IJ.openImage(path);
+        BufferedImage img = null;
+        try {
+            img = ImageIO.read(new File(path));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         int w = Math.max(img.getWidth(), this.img.getWidth());
         int h = Math.max(img.getHeight(), this.img.getHeight());
         BufferedImage temp = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
-        Graphics2D g2d = (Graphics2D) temp.getGraphics();-
+        Graphics2D g2d = (Graphics2D) temp.getGraphics();
         g2d.drawImage(this.img, 0, 0, this);
-        g2d.drawImage(img.getImage(), 0, 0, this);
+        g2d.drawImage(img, 0, 0, this);
         this.img = temp;
         g2d.dispose();
         repaint();

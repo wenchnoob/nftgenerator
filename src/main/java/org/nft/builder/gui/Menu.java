@@ -1,17 +1,13 @@
 package org.nft.builder.gui;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
 import javax.swing.*;
-import java.awt.event.ActionListener;
+import java.awt.*;
 import java.io.File;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.Optional;
+import java.util.Objects;
 import java.util.Random;
 
 @Component
@@ -19,12 +15,13 @@ public class Menu extends JPanel {
 
     Canvas canvas;
 
-    String head = "C:\\Users\\wench\\IdeaProjects\\builder\\src\\main\\resources\\images\\heads";
-    String torso = "C:\\Users\\wench\\IdeaProjects\\builder\\src\\main\\resources\\images\\torsos";
-    String legs = "C:\\Users\\wench\\IdeaProjects\\builder\\src\\main\\resources\\images\\legs";
+    String head = "src/main/resources/images/heads";
+    String torso = "src/main/resources/images/torsos";
+    String legs = "src/main/resources/images/legs";
 
     @Autowired
     public Menu(Canvas canvas) {
+        setPreferredSize(new Dimension(500, 100));
         this.canvas = canvas;
         add(picImageButton());
         add(saveButton());
@@ -55,7 +52,7 @@ public class Menu extends JPanel {
 
     private File randFromFolder(String folder) {
         File[] files = Path.of(folder).toFile().listFiles();
-        if (files.length <= 0) return null;
+        if (Objects.isNull(files) || files.length <= 0) return null;
         int idx = new Random().nextInt(files.length);
         return files[idx];
     }
