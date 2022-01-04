@@ -1,29 +1,44 @@
 package org.nft.builder.gui;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import org.nft.builder.controllers.FeatureController;
+import org.nft.builder.gui.input.InputFactory;
+import org.nft.builder.gui.input.compound.FeatureSpecInput;
+import org.nft.builder.managers.ContextManager;
+import org.nft.builder.models.Feature;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.File;
-import java.nio.file.Path;
-import java.util.Objects;
-import java.util.Random;
 
 @Component
+@RequiredArgsConstructor(onConstructor_={@Autowired})
 public class Menu extends JPanel {
 
-    Canvas canvas;
+    @NonNull
+    private final Canvas canvas;
 
-    String head = "src/main/resources/images/heads";
-    String torso = "src/main/resources/images/torsos";
-    String legs = "src/main/resources/images/legs";
+    private final String head = "src/main/resources/images/heads/png";
+    private final String torso = "src/main/resources/images/torsos/png";
+    private final String legs = "src/main/resources/images/legs/png";
+    private final String arms = "src/main/resources/images/arms/png";
 
-    @Autowired
-    public Menu(Canvas canvas) {
+    @NonNull
+    private ContextManager contextManager;
+
+    @PostConstruct
+    public void setup() {
         setPreferredSize(new Dimension(500, 100));
-        this.canvas = canvas;
-        add(picImageButton());
+
+        add(addFeatureButton());
         add(saveButton());
         add(shuffleButton());
     }
@@ -32,40 +47,37 @@ public class Menu extends JPanel {
         return new JButton("Shuffle") {
             {
                 addActionListener(action -> {
-                    canvas.clear();
-
-                    File randHead = randFromFolder(head);
-                    File randTorso = randFromFolder(torso);
-                    File randLegs = randFromFolder(legs);
-
-                    System.out.println(randHead);
-                    System.out.println(randTorso);
-                    System.out.println(randLegs);
-
-                    if (randHead != null) canvas.addPicture(randHead);
-                    if (randTorso != null) canvas.addPicture(randTorso);
-                    if (randLegs != null) canvas.addPicture(randLegs);
+                    Window win = (Window) contextManager.getBean("window");
+                    win.getRegisteredFeatures().values().forEach(featureController -> {
+                        featureController.getRandom();
+                        canvas.repaint();
+                    });
                 });
             }
         };
     }
 
-    private File randFromFolder(String folder) {
-        File[] files = Path.of(folder).toFile().listFiles();
-        if (Objects.isNull(files) || files.length <= 0) return null;
-        int idx = new Random().nextInt(files.length);
-        return files[idx];
+    public JButton shuffleAllButton() {
+        return new JButton("Shuffle All") {
+            {
+                
+            }
+        };
     }
 
-    public JButton picImageButton() {
-        return new JButton("Add an Image") {
+    public JButton addFeatureButton() {
+        return new JButton("Add a Feature") {
             {
-                addActionListener(action -> {
-                    JFileChooser chooser = new JFileChooser(new File("./").getAbsolutePath() + "/src/main/resources/images");
+                addActionListener(click -> {
+                    JOptionPane.showMessageDialog(null, "First choose the folder that all the images for your feature are in.");
+                    JFileChooser chooser = new JFileChooser();
+                    chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+                    chooser.setCurrentDirectory(new File(new File("./").getAbsolutePath() + "/src/main/resources/images"));
                     chooser.showOpenDialog(null);
                     File chosen = chooser.getSelectedFile();
+
                     if (chosen == null) return;
-                    canvas.addPicture(chosen);
+                    new FeatureSpecInput((Window) contextManager.getBean("window"), chosen, "Feature Setup", Dialog.ModalityType.DOCUMENT_MODAL);
                 });
             }
         };
@@ -78,7 +90,6 @@ public class Menu extends JPanel {
                     JFileChooser chooser = new JFileChooser(new File("./").getAbsolutePath() + "/src/main/resources/images");
                     chooser.showSaveDialog(null);
                     File chosen = chooser.getSelectedFile();
-                    System.out.println(chosen);
                     canvas.saveTo(chosen);
                 });
             }
