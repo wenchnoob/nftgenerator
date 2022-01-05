@@ -38,9 +38,11 @@ public class Menu extends JPanel {
     public void setup() {
         setPreferredSize(new Dimension(500, 100));
 
+        add(manageFeaturesButton());
         add(addFeatureButton());
         add(saveButton());
         add(shuffleButton());
+        add(shuffleAllButton());
     }
 
     public JButton shuffleButton() {
@@ -60,7 +62,25 @@ public class Menu extends JPanel {
     public JButton shuffleAllButton() {
         return new JButton("Shuffle All") {
             {
-                
+                addActionListener(action -> {
+                    JOptionPane.showMessageDialog(null, "First choose the folder that all the images will be saved.");
+                    JFileChooser chooser = new JFileChooser();
+                    chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+                    chooser.setCurrentDirectory(new File(new File("./").getAbsolutePath() + "/src/main/resources/images"));
+                    chooser.showSaveDialog(null);
+                    File chosen = chooser.getSelectedFile();
+                    if (chosen == null) return;
+                    if (!chosen.exists()) chosen.mkdir();
+                    if (chosen.isDirectory()) canvas.shuffleAll(chosen);
+                });
+            }
+        };
+    }
+
+    public JButton manageFeaturesButton() {
+        return new JButton("Manage Features") {
+            {
+
             }
         };
     }

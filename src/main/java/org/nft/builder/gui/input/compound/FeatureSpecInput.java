@@ -56,7 +56,7 @@ public class FeatureSpecInput extends JDialog {
         add(submit);
 
         submit.addActionListener(action ->  {
-            win.registerFeature(srcFile, new Feature(nameIn.getText(), Integer.parseInt(xoffsetIn.getText()), Integer.parseInt(yoffsetIn.getText()), Integer.parseInt(zIndexIn.getText())));
+            win.registerFeature(srcFile, new Feature(srcFile, nameIn.getText(), Integer.parseInt(xoffsetIn.getText()), Integer.parseInt(yoffsetIn.getText()), Integer.parseInt(zIndexIn.getText())));
             dispose();
         });
 

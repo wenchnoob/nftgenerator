@@ -5,6 +5,7 @@ import lombok.*;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.File;
 
 @Data
 @Builder
@@ -14,6 +15,9 @@ import java.awt.image.BufferedImage;
 public class Feature {
 
     @NonNull
+    private File srcFile;
+
+    @NonNull
     private String name;
 
     @NonNull
@@ -21,10 +25,12 @@ public class Feature {
 
     @NonNull
     private int zIndex;
+
     private int type;
 
     @Setter(AccessLevel.NONE)
     private BufferedImage img;
+
 
     public BufferedImage transform(BufferedImage img) {
         if (img == null) throw new IllegalArgumentException("Image to transform cannot be null");

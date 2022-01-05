@@ -92,6 +92,18 @@ public class ImageCycler {
         return images.get(cycler.random());
     }
 
+    public void setPosition(int amount) {
+        cycler.set(amount);
+    }
+
+    public boolean isAtEnd() {
+        return  cycler.isAtEnd();
+    }
+
+    public boolean isAtStart() {
+        return cycler.isAtStart();
+    }
+
     @Getter
     @AllArgsConstructor
     private class Cycler {
@@ -116,6 +128,19 @@ public class ImageCycler {
         public int random() {
             cur = rand.nextInt(max - min) + min;
             return cur;
+        }
+
+        public void set(int amount) {
+            if (amount < min || amount >= max) throw new IllegalArgumentException("Out of bounds");
+            this.cur = amount;
+        }
+
+        public boolean isAtEnd() {
+            return cur == max - 1;
+        }
+
+        public boolean isAtStart() {
+            return cur == min;
         }
     }
 }

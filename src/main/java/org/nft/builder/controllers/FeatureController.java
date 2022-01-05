@@ -1,7 +1,6 @@
 package org.nft.builder.controllers;
 
 import lombok.Getter;
-import lombok.Setter;
 import lombok.ToString;
 import org.nft.builder.gui.Canvas;
 import org.nft.builder.models.Feature;
@@ -12,6 +11,8 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 @ToString
 public class FeatureController {
@@ -36,6 +37,13 @@ public class FeatureController {
         this.canvas = canvas;
     }
 
+    public FeatureController(Feature feature, Canvas canvas) {
+        this.srcFile = feature.getSrcFile();
+        this.feature = feature;
+        this.imageCycler = new ImageCycler(this.srcFile);
+        this.canvas = canvas;
+    }
+
     public boolean changeSource(File srcFile) {
         boolean success = this.imageCycler.changeSource(this.srcFile);
         if (!success) return false;
@@ -51,7 +59,7 @@ public class FeatureController {
         return true;
     }
 
-    private BufferedImage getPrev() {
+    public BufferedImage getPrev() {
         try {
             return feature.transform(ImageIO.read(imageCycler.getPrev()));
         } catch (IOException e) {
@@ -60,7 +68,7 @@ public class FeatureController {
         }
     }
 
-    private BufferedImage getCur() {
+    public BufferedImage getCur() {
         try {
             return feature.transform(ImageIO.read(imageCycler.getCur()));
         } catch (IOException e) {
@@ -69,7 +77,7 @@ public class FeatureController {
         }
     }
 
-    private BufferedImage getNext() {
+    public BufferedImage getNext() {
         try {
             return feature.transform(ImageIO.read(imageCycler.getNext()));
         } catch (IOException e) {
@@ -112,4 +120,27 @@ public class FeatureController {
         };
     }
 
+    public void setPosition(int amount) {
+        imageCycler.setPosition(amount);
+    }
+
+    public boolean isAtEnd() {
+        return  imageCycler.isAtEnd();
+    }
+
+    public boolean isAtStart() {
+        return imageCycler.isAtStart();
+    }
+
+    public List<BufferedImage> allImages() {
+        List<BufferedImage> allImages = new ArrayList<>();
+        for (File f: imageCycler.getImages()) {
+            try {
+                allImages.add(ImageIO.read(f));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return allImages;
+    }
 }
