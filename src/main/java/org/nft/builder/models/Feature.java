@@ -7,7 +7,8 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 
-@Data
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor(force = true)
 @AllArgsConstructor
@@ -30,7 +31,6 @@ public class Feature {
 
     @Setter(AccessLevel.NONE)
     private BufferedImage img;
-
 
     public BufferedImage transform(BufferedImage img) {
         if (img == null) throw new IllegalArgumentException("Image to transform cannot be null");

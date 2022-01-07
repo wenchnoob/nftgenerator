@@ -14,15 +14,13 @@ import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
 import javax.swing.*;
 import java.awt.*;
-import java.io.File;
 import java.util.Hashtable;
 
 @Component
-@NoArgsConstructor(force = true)
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
 public class Window extends JFrame {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(Window.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(Window.class);
 
     @Getter
     private Hashtable<Feature, FeatureController> registeredFeatures;
@@ -32,10 +30,6 @@ public class Window extends JFrame {
 
     @NonNull
     private final Menu menu;
-
-    JPanel leftPanel = new JPanel();
-    JPanel rightPanel = new JPanel();
-
 
     @PostConstruct
     private void init() {
@@ -50,11 +44,8 @@ public class Window extends JFrame {
         cont.add(canvas, BorderLayout.CENTER);
         cont.add(menu, BorderLayout.PAGE_END);
 
-        leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.Y_AXIS));
-        rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
-
-        cont.add(leftPanel, BorderLayout.LINE_START);
-        cont.add(rightPanel, BorderLayout.LINE_END);
+        cont.add(menu.leftHandPane(), BorderLayout.LINE_START);
+        cont.add(menu.rightHandPane(), BorderLayout.LINE_END);
 
         registeredFeatures = new Hashtable<>();
 
@@ -66,34 +57,4 @@ public class Window extends JFrame {
 
         LOGGER.info("Initialized Window");
     }
-
-    public boolean registerFeature(File src, Feature feat) {
-        LOGGER.info("Registering feature: " + feat);
-
-        FeatureController controller = new FeatureController(src, feat, canvas);
-
-        canvas.addFeature(feat);
-        registeredFeatures.put(feat, controller);
-
-        JButton prevButton = controller.getPrevButton();
-        JButton nextButton = controller.getNextButton();
-
-        leftPanel.add(prevButton);
-        leftPanel.revalidate();
-        leftPanel.repaint();
-        rightPanel.add(nextButton);
-        repaint();
-        return true;
-    }
-
-    public boolean unregisterFeature(Feature feat) {
-        FeatureController controller = registeredFeatures.get(feat);
-        canvas.removeFeature(feat);
-        JButton prevButton = controller.getPrevButton();
-        JButton nextButton = controller.getNextButton();
-        leftPanel.remove(prevButton);
-        rightPanel.remove(nextButton);
-        return false;
-    }
-
 }

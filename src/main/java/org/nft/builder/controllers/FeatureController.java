@@ -1,7 +1,7 @@
 package org.nft.builder.controllers;
 
+import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.ToString;
 import org.nft.builder.gui.Canvas;
 import org.nft.builder.models.Feature;
 
@@ -14,49 +14,48 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-@ToString
+@Getter
 public class FeatureController {
 
     private Canvas canvas;
 
     private File srcFile;
 
-    @Getter
     private Feature feature;
 
+    @Getter(AccessLevel.NONE)
     private ImageCycler imageCycler;
 
-    public FeatureController(String srcPath, Feature feature, Canvas canvas) {
-        this(new File(srcPath), feature, canvas);
-    }
+    private JButton prevButton;
 
-    public FeatureController(File srcFile, Feature feature, Canvas canvas) {
-        this.srcFile = srcFile;
-        this.feature = feature;
-        this.imageCycler = new ImageCycler(srcFile);
-        this.canvas = canvas;
-    }
+    private JButton nextButton;
 
     public FeatureController(Feature feature, Canvas canvas) {
         this.srcFile = feature.getSrcFile();
         this.feature = feature;
         this.imageCycler = new ImageCycler(this.srcFile);
         this.canvas = canvas;
-    }
 
-    public boolean changeSource(File srcFile) {
-        boolean success = this.imageCycler.changeSource(this.srcFile);
-        if (!success) return false;
-        this.srcFile = srcFile;
-        return true;
-    }
+        prevButton = new JButton("Prev: " + feature.getName()) {
+            {
+                setMinimumSize(new Dimension(150,  50));
+                setMaximumSize(new Dimension(150,  50));
+                setPreferredSize(new Dimension(150, 50));
+                addActionListener(action -> {
+                    getPrev();
+                    canvas.repaint();
+                });
+            }
+        };
 
-    public boolean changeFeature(Feature feature) {
-        if (feature == null) throw new IllegalArgumentException("Cannot make feature null.");
-        canvas.removeFeature(feature);
-        canvas.addFeature(feature);
-        this.feature = feature;
-        return true;
+        nextButton = new JButton("Next: " + feature.getName()) {
+            {
+                addActionListener(action -> {
+                    getNext();
+                    canvas.repaint();
+                });
+            }
+        };
     }
 
     public BufferedImage getPrev() {
@@ -95,48 +94,11 @@ public class FeatureController {
         }
     }
 
-    public JButton getPrevButton() {
-        return new JButton("Prev: " + feature.getName()) {
-            {
-                setMinimumSize(new Dimension(150,  50));
-                setMaximumSize(new Dimension(150,  50));
-                setPreferredSize(new Dimension(150, 50));
-                addActionListener(action -> {
-                    getPrev();
-                    canvas.repaint();
-                });
-            }
-        };
-    }
-
-    public JButton getNextButton() {
-        return new JButton("Next: " + feature.getName()) {
-            {
-                addActionListener(action -> {
-                    getNext();
-                    canvas.repaint();
-                });
-            }
-        };
-    }
-
-    public void setPosition(int amount) {
-        imageCycler.setPosition(amount);
-    }
-
-    public boolean isAtEnd() {
-        return  imageCycler.isAtEnd();
-    }
-
-    public boolean isAtStart() {
-        return imageCycler.isAtStart();
-    }
-
     public List<BufferedImage> allImages() {
         List<BufferedImage> allImages = new ArrayList<>();
         for (File f: imageCycler.getImages()) {
             try {
-                allImages.add(ImageIO.read(f));
+                allImages.add(feature.transform(ImageIO.read(f)));
             } catch (IOException e) {
                 e.printStackTrace();
             }

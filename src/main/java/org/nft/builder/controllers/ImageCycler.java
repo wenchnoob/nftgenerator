@@ -6,8 +6,8 @@ import java.io.File;
 import java.util.*;
 import java.util.List;
 
-@Data
-@NoArgsConstructor
+@Getter
+@Setter
 public class ImageCycler {
 
     private File srcFile;
@@ -23,32 +23,16 @@ public class ImageCycler {
     @Setter(AccessLevel.NONE)
     private List<File> images = new ArrayList<>();
 
-    public ImageCycler(String srcPath) {
-        this(new File(srcPath));
-    }
-
     public ImageCycler(File srcFile) {
-        changeSource(srcFile);
-    }
-
-    public boolean changeSource(String srcPath) {
-        return changeSource(new File(srcPath));
-    }
-
-    public boolean changeSource(File srcFile) {
         if (!srcFile.isDirectory()) throw new IllegalArgumentException("The root of the ImageCycler must be a directory");
 
         List<File> images = new ArrayList<>();
         processDirRecursively(srcFile, images);
 
-        if (images.size() <= 0) return false;
-
         this.images = images;
         this.srcFile = srcFile;
 
         cycler = new Cycler(rand.nextInt(images.size()), 0, this.images.size());
-
-        return true;
     }
 
     private List<File> processDir(File dir) {
@@ -92,18 +76,6 @@ public class ImageCycler {
         return images.get(cycler.random());
     }
 
-    public void setPosition(int amount) {
-        cycler.set(amount);
-    }
-
-    public boolean isAtEnd() {
-        return  cycler.isAtEnd();
-    }
-
-    public boolean isAtStart() {
-        return cycler.isAtStart();
-    }
-
     @Getter
     @AllArgsConstructor
     private class Cycler {
@@ -128,19 +100,6 @@ public class ImageCycler {
         public int random() {
             cur = rand.nextInt(max - min) + min;
             return cur;
-        }
-
-        public void set(int amount) {
-            if (amount < min || amount >= max) throw new IllegalArgumentException("Out of bounds");
-            this.cur = amount;
-        }
-
-        public boolean isAtEnd() {
-            return cur == max - 1;
-        }
-
-        public boolean isAtStart() {
-            return cur == min;
         }
     }
 }

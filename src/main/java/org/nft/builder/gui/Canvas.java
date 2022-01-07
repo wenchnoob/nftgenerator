@@ -2,6 +2,7 @@ package org.nft.builder.gui;
 
 import lombok.Getter;
 import org.nft.builder.controllers.FeatureController;
+import org.nft.builder.imageops.transformations.Rotations;
 import org.nft.builder.models.Feature;
 import org.springframework.stereotype.Component;
 
@@ -29,35 +30,7 @@ public class Canvas extends JPanel {
         setBackground(Color.BLUE);
         setOpaque(false);
         img = new BufferedImage(100, 100, BufferedImage.TYPE_INT_RGB);
-        Graphics2D g2d = (Graphics2D) img.getGraphics();
-        g2d.drawString("Hey what's up", 150, 150);
         features = new HashSet<>();
-    }
-
-    public void addFeature(File src, Feature feature) {
-        BufferedImage img = null;
-        try {
-            img = ImageIO.read(src);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        if (img == null) return;
-        img = feature.transform(img);
-
-        addToCanvas(img);
-    }
-
-    private void addToCanvas(BufferedImage img) {
-        int w = Math.max(img.getWidth(), this.img.getWidth());
-        int h = Math.max(img.getHeight(), this.img.getHeight());
-        BufferedImage temp = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
-        Graphics2D g2d = (Graphics2D) temp.getGraphics();
-        g2d.drawImage(this.img, 0, 0, this);
-        g2d.drawImage(img, 0, 0, this);
-        this.img = temp;
-        g2d.dispose();
-        repaint();
     }
 
     public void addFeature(Feature feat) {
@@ -66,28 +39,10 @@ public class Canvas extends JPanel {
     }
 
     public void removeFeature(Feature feat) {
+        System.out.println(features);
         features.remove(feat);
+        System.out.println(features);
         repaint();
-    }
-
-    public void addPicture(File file) {
-        BufferedImage img = null;
-        try {
-            img = ImageIO.read(file);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        if (img == null) return;
-        addToCanvas(img);
-    }
-
-    public void clear() {
-        img = new BufferedImage(100, 100, BufferedImage.TYPE_INT_RGB);
-        repaint();
-    }
-
-    public void addPicture(String path) {
-        addPicture(new File(path));
     }
 
     public void saveTo(File chosen) {
@@ -105,7 +60,7 @@ public class Canvas extends JPanel {
         }
     }
 
-    public void shuffleAll(File  chosen) {
+    public void shuffleAll(File chosen) {
         Queue<Feature> pQueue = new PriorityQueue<>(Comparator.comparingInt(Feature::getZIndex));
         pQueue.addAll(features);
         if (pQueue.isEmpty()) return;
@@ -113,31 +68,24 @@ public class Canvas extends JPanel {
         permuteAll(new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB), pQueue, images);
 
         long feat = 0;
-        for (BufferedImage img: images) saveTo(new File(chosen.getAbsolutePath() + "/" + feat++), img);
+        for (BufferedImage img : images) saveTo(new File(chosen.getAbsolutePath() + "/" + feat++), img);
 
     }
 
     public void permuteAll(BufferedImage curImage, Queue<Feature> remaining, List<BufferedImage> images) {
         if (remaining.isEmpty()) {
             images.add(curImage);
-        } else {
+            return;
+        }
 
         Feature cur = remaining.poll();
 
-//        int w, h;
-//        BufferedImage feat;
-//        BufferedImage tmp;
-//        Graphics g;
-
-            FeatureController cont = new FeatureController(cur, this);
-            List<BufferedImage> imageList = cont.allImages();
-            cont.setPosition(0);
-            for(BufferedImage img: imageList) {
-                workOnImage(curImage, img, remaining, images);
-            }
-
-            remaining.offer(cur);
+        FeatureController cont = new FeatureController(cur, this);
+        List<BufferedImage> imageList = cont.allImages();
+        for (BufferedImage img : imageList) {
+            workOnImage(curImage, img, remaining, images);
         }
+        remaining.offer(cur);
     }
 
     private void workOnImage(BufferedImage curImage, BufferedImage img, Queue<Feature> remaining, List<BufferedImage> images) {
@@ -145,10 +93,8 @@ public class Canvas extends JPanel {
         int h;
         BufferedImage tmp;
         Graphics g;
-        w = curImage.getWidth();
-        h = curImage.getHeight();
-        w = Math.max(w, img.getWidth());
-        h = Math.max(h, img.getHeight());
+        w = Math.max(curImage.getWidth(), img.getWidth());
+        h = Math.max(curImage.getHeight(), img.getHeight());
         tmp = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
         g = tmp.getGraphics();
         g.drawImage(curImage, 0, 0, null);
@@ -166,16 +112,16 @@ public class Canvas extends JPanel {
         AtomicReference<BufferedImage> img = new AtomicReference<>(new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB));
 
         features.stream().sorted(Comparator.comparingInt(Feature::getZIndex)).forEach(feature -> {
-            new FeatureController(feature, this).getCur();
+            if (feature.getImg() == null) new FeatureController(feature, this).getCur();
             int h = Math.max(img.get().getHeight(), feature.getImg().getHeight());
             int w = Math.max(img.get().getWidth(), feature.getImg().getWidth());
-            BufferedImage tmp = new BufferedImage(h, w, BufferedImage.TYPE_INT_ARGB);
+            BufferedImage tmp = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
             Graphics2D g = (Graphics2D) tmp.getGraphics();
             g.drawImage(img.get(), 0, 0, null);
             g.drawImage(feature.getImg(), 0, 0, null);
             img.set(tmp);
         });
 
-        return img.get();
+        return new Rotations().rotateRight90(img.get());
     }
 }

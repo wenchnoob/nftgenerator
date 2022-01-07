@@ -8,6 +8,10 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Component;
 
+import java.util.Arrays;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 @Component
 @RequiredArgsConstructor(onConstructor_= {@Autowired})
 public class ContextManager implements ApplicationContextAware {
@@ -16,6 +20,10 @@ public class ContextManager implements ApplicationContextAware {
 
     public Object getBean(String name) {
         return context.getBean(name);
+    }
+
+    public Set<Object> getBeans(Class clazz) {
+        return Arrays.stream(context.getBeanNamesForType(clazz)).map(name -> context.getBean(name)).collect(Collectors.toSet());
     }
 
     public void addBean(Object bean, String name) {

@@ -3,36 +3,42 @@ package org.nft.builder.gui;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.nft.builder.controllers.FeatureController;
-import org.nft.builder.gui.input.InputFactory;
+import org.nft.builder.controllers.FeaturesManager;
+import org.nft.builder.gui.input.compound.FeatureManagerUI;
 import org.nft.builder.gui.input.compound.FeatureSpecInput;
 import org.nft.builder.managers.ContextManager;
 import org.nft.builder.models.Feature;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.io.File;
+import java.util.HashSet;
+import java.util.Set;
 
 @Component
-@RequiredArgsConstructor(onConstructor_={@Autowired})
+@RequiredArgsConstructor(onConstructor_ = {@Autowired})
 public class Menu extends JPanel {
 
     @NonNull
     private final Canvas canvas;
 
-    private final String head = "src/main/resources/images/heads/png";
-    private final String torso = "src/main/resources/images/torsos/png";
-    private final String legs = "src/main/resources/images/legs/png";
-    private final String arms = "src/main/resources/images/arms/png";
-
     @NonNull
     private ContextManager contextManager;
+
+    private final JPanel leftPanel = new JPanel() {
+        {
+            setLayout(new GridLayout(0, 1));
+        }
+    };
+
+    private final JPanel rightPanel = new JPanel() {
+        {
+            setLayout(new GridLayout(0, 1));
+        }
+    };
 
     @PostConstruct
     public void setup() {
@@ -49,11 +55,8 @@ public class Menu extends JPanel {
         return new JButton("Shuffle") {
             {
                 addActionListener(action -> {
-                    Window win = (Window) contextManager.getBean("window");
-                    win.getRegisteredFeatures().values().forEach(featureController -> {
-                        featureController.getRandom();
-                        canvas.repaint();
-                    });
+                    canvas.getFeatures().forEach(feat -> new FeatureController(feat, canvas).getRandom());
+                    canvas.repaint();
                 });
             }
         };
@@ -80,7 +83,11 @@ public class Menu extends JPanel {
     public JButton manageFeaturesButton() {
         return new JButton("Manage Features") {
             {
-
+                addActionListener(action -> {
+                    FeatureManagerUI ui = (FeatureManagerUI) contextManager.getBean("featureManagerUI");
+                    ui.updateMenu();
+                    ui.setVisible(true);
+                });
             }
         };
     }
@@ -97,10 +104,14 @@ public class Menu extends JPanel {
                     File chosen = chooser.getSelectedFile();
 
                     if (chosen == null) return;
-                    new FeatureSpecInput((Window) contextManager.getBean("window"), chosen, "Feature Setup", Dialog.ModalityType.DOCUMENT_MODAL);
+                    inputDialog(chosen);
                 });
             }
         };
+    }
+
+    private void inputDialog(File chosen) {
+        new FeatureSpecInput((Window) contextManager.getBean("window"), this, (FeaturesManager) contextManager.getBean("featuresManager"), chosen, "Feature Setup", Dialog.ModalityType.DOCUMENT_MODAL);
     }
 
     public JButton saveButton() {
@@ -116,4 +127,45 @@ public class Menu extends JPanel {
         };
     }
 
+    public JPanel leftHandPane() {
+        return leftPanel;
+    }
+
+    public JPanel rightHandPane() {
+        return rightPanel;
+    }
+
+    public boolean registerFeature(Feature feat) {
+        FeatureController controller = new FeatureController(feat, canvas);
+
+        canvas.addFeature(feat);
+        System.out.println("Adding feature " + feat.getName() + ", to context");
+        contextManager.addBean(controller, feat.getName());
+
+        JButton prevButton = controller.getPrevButton();
+        JButton nextButton = controller.getNextButton();
+
+        leftPanel.add(prevButton);
+        leftPanel.revalidate();
+        leftPanel.repaint();
+        rightPanel.add(nextButton);
+        rightPanel.revalidate();
+        rightPanel.repaint();
+        repaint();
+        return true;
+    }
+
+    public boolean unregisterFeature(Feature feat) {
+        //FeatureController controller = registeredFeatures.get(feat);
+        canvas.removeFeature(feat);
+        leftPanel.removeAll();
+        rightPanel.removeAll();
+        leftPanel.revalidate();
+        rightPanel.revalidate();
+        leftPanel.repaint();
+        rightPanel.repaint();
+        Set<Feature> featureSet = canvas.getFeatures();
+        new HashSet<>(featureSet).forEach(this::registerFeature);
+        return false;
+    }
 }
