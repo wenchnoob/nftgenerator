@@ -43,6 +43,8 @@ public class FeaturesManager {
         if (feat == null) return;
         managedFeatures.put(feat.getName(), feat);
         features.put(feat.getName(), feat);
+        Menu menu = (Menu) contextManager.getBean("menu");
+        menu.registerFeature(feat);
     }
 
     public void removeManagedFeature(String name) {

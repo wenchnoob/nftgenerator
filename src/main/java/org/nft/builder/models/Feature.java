@@ -2,14 +2,17 @@ package org.nft.builder.models;
 
 
 import lombok.*;
+import org.nft.builder.imageops.Filter;
+import org.nft.builder.imageops.utils.IO;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 
-@Getter
-@Setter
-@Builder
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
+
 @NoArgsConstructor(force = true)
 @AllArgsConstructor
 @RequiredArgsConstructor
@@ -29,19 +32,96 @@ public class Feature {
 
     private int type;
 
-    @Setter(AccessLevel.NONE)
+    private List<Filter> filters = new ArrayList<>();
+
+    private boolean isDirty;
+
+    @NonNull
+    private BufferedImage originalImage;
+
     private BufferedImage img;
 
-    public BufferedImage transform(BufferedImage img) {
-        if (img == null) throw new IllegalArgumentException("Image to transform cannot be null");
+    public BufferedImage getImg() {
+        if (originalImage == null) throw new IllegalArgumentException("Original Image not set for this feature.");
+        if (!isDirty) return img;
 
-        int w = img.getWidth();
-        int h = img.getHeight();
+        AtomicReference<BufferedImage> filteredImage = new AtomicReference<>(IO.copy(originalImage));
+
+        filters.stream().parallel().forEach(filter -> {
+            filteredImage.set(filter.apply(filteredImage.get()));
+        });
+
+        int w = filteredImage.get().getWidth();
+        int h = filteredImage.get().getHeight();
         this.img = new BufferedImage(w + xOffset, h + yOffset, BufferedImage.TYPE_INT_ARGB);
 
         Graphics2D g = (Graphics2D) this.img.getGraphics();
-        g.drawImage(img, xOffset, yOffset, null);
+        g.drawImage(filteredImage.get(), xOffset, yOffset, null);
         g.dispose();
         return this.img;
+    }
+
+    public void setImage(BufferedImage img) {
+        this.originalImage = img;
+        this.isDirty = true;
+    }
+
+    public void addFilter(Filter filter) {
+        filters.add(filter);
+    }
+
+    public void removeFilter(Filter filter) {
+        filters.remove(filter);
+    }
+
+    public File getSrcFile() {
+        return this.srcFile;
+    }
+
+    public void setSrcFile(File srcFile) {
+        this.srcFile = srcFile;
+    }
+
+    public String getName() {
+        return this.name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public int getXOffset() {
+        return this.xOffset;
+    }
+
+    public void setXOffset(int xOffset) {
+        this.xOffset = xOffset;
+        this.isDirty = true;
+    }
+
+    public int getYOffset() {
+        return this.yOffset;
+    }
+
+    public void setYOffset(int yOffset) {
+        this.yOffset = yOffset;
+        this.isDirty = true;
+    }
+
+    public int getZIndex() {
+        return this.zIndex;
+    }
+
+    public void setZIndex(int zIndex) {
+        this.zIndex = zIndex;
+    }
+
+    public int getType() {
+        return this.type;
+    }
+
+    public void setType(int type) {
+        this.type = type;
+        this.isDirty = true;
     }
 }

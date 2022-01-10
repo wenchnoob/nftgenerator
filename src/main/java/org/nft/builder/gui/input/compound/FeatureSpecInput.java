@@ -2,13 +2,15 @@ package org.nft.builder.gui.input.compound;
 
 import org.nft.builder.controllers.FeaturesManager;
 import org.nft.builder.gui.input.InputFactory;
-import org.nft.builder.imageops.filters.BlueLightFilter;
-import org.nft.builder.imageops.filters.Filter;
+import org.nft.builder.imageops.OpsFactory;
+import org.nft.builder.imageops.Filter;
+import org.nft.builder.imageops.utils.IO;
 import org.nft.builder.models.Feature;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.List;
 import java.util.ArrayList;
@@ -18,8 +20,15 @@ import org.nft.builder.gui.Menu;
 
 public class FeatureSpecInput extends JDialog {
 
-    JLabel selectedLocation = new JLabel();
+    private Menu menu;
+    private FeaturesManager featuresManager;
+    private File srcFile;
+    private Feature feature;
+
+    private JPanel contRoot = new JPanel();
+
     JLabel locationLabel = new JLabel("Location Selected: ");
+    JLabel selectedLocation = new JLabel();
 
     JLabel name = new JLabel("Name: ");
     JTextField nameIn = new JTextField("");
@@ -31,9 +40,8 @@ public class FeatureSpecInput extends JDialog {
     JTextField yoffsetIn = InputFactory.numericInput("0");
 
     JLabel zIndex = new JLabel("Z-Index");
-    JTextField zIndexIn =InputFactory.numericInput("0");
+    JTextField zIndexIn = InputFactory.numericInput("0");
 
-    JLabel empty = new JLabel(" ");
     JButton submit = new JButton("Submit");
 
     JButton addFilters = new JButton("Add Filters");
@@ -41,55 +49,96 @@ public class FeatureSpecInput extends JDialog {
 
     List<Filter> filters = new ArrayList<>();
 
-    public FeatureSpecInput(Window win, Menu menu, FeaturesManager featuresManager, File srcFile, String title, Dialog.ModalityType modalityType) {
-        super(win, title, modalityType);
+    private ActionListener addFeature = action -> {
+        String name = nameIn.getText();
+        int xOffset = Integer.parseInt(xoffsetIn.getText());
+        int yOffset = Integer.parseInt(yoffsetIn.getText());
+        int zIndex = Integer.parseInt(zIndexIn.getText());
+        Feature feat = new Feature(srcFile, name, xOffset, yOffset, zIndex, IO.emptyImage());
 
-        setLayout(new GridLayout(0, 2));
+        featuresManager.addManagedFeature(feat);
+        dispose();
+    };
 
-        selectedLocation.setText(srcFile.getAbsolutePath());
+    private ActionListener editFeature = action -> {
+        if (action.getSource() == null || action.getActionCommand().equals("refresh")) return;
+        menu.unregisterFeature(feature);
 
-        selectedLocation.setBorder(new EmptyBorder(10, 10, 10, 10));
-        locationLabel.setBorder(new EmptyBorder(10, 10, 10, 10));
+        String name = nameIn.getText();
+        int xOffset = Integer.parseInt(xoffsetIn.getText());
+        int yOffset = Integer.parseInt(yoffsetIn.getText());
+        int zIndex = Integer.parseInt(zIndexIn.getText());
 
-        add(locationLabel);
-        add(selectedLocation);
-        add(name);
-        add(nameIn);
-        add(xoffset);
-        add(xoffsetIn);
-        add(yoffset);
-        add(yoffsetIn);
-        add(zIndex);
-        add(zIndexIn);
-        add(addFilters);
-        add(new JLabel(""));
-        add(filtersLabel);
-        add(new JLabel(""));
-        add(submit);
+        feature.setName(name);
+        feature.setXOffset(xOffset);
+        feature.setYOffset(yOffset);
+        feature.setZIndex(zIndex);
 
-        addFilters.addActionListener(action -> {
-            Object in = JOptionPane.showInputDialog(this, "Select a Filter", "Filter Selection", JOptionPane.QUESTION_MESSAGE, null, new Object[]{"Hey", "Bye", "Yes", "No"}, "Hey");
-            addFilter(new BlueLightFilter());
-            //System.out.println(in);
-        });
+        menu.registerFeature(feature);
+        dispose();
+    };
 
-        submit.addActionListener(action ->  {
-            String name = nameIn.getText();
-            int xOffset = Integer.parseInt(xoffsetIn.getText());
-            int yOffset = Integer.parseInt(yoffsetIn.getText());
-            int zIndex = Integer.parseInt(zIndexIn.getText());
-            Feature feat = new Feature(srcFile, name, xOffset, yOffset, zIndex);
+    public FeatureSpecInput(Window win, Menu menu, FeaturesManager featuresManager, File srcFile, Feature feature, boolean isNew, Dialog.ModalityType modalityType) {
+        super(win, (isNew ? "Add " : "Edit ") + "Feature", modalityType);
+        this.menu = menu;
+        this.featuresManager = featuresManager;
+        this.srcFile = srcFile;
+        this.feature = feature;
 
-            menu.registerFeature(feat);
-            featuresManager.addManagedFeature(feat);
-            dispose();
-        });
+        contRoot.setLayout(new GridLayout(0, 2));
 
+        contRoot.add(locationLabel);
+        contRoot.add(selectedLocation);
+        contRoot.add(name);
+        contRoot.add(nameIn);
+        contRoot.add(xoffset);
+        contRoot.add(xoffsetIn);
+        contRoot.add(yoffset);
+        contRoot.add(yoffsetIn);
+        contRoot.add(zIndex);
+        contRoot.add(zIndexIn);
+
+
+        if (isNew) {
+            selectedLocation.setText(srcFile.getAbsolutePath());
+
+            selectedLocation.setBorder(new EmptyBorder(10, 10, 10, 10));
+            locationLabel.setBorder(new EmptyBorder(10, 10, 10, 10));
+
+            contRoot.add(new JLabel(""));
+            contRoot.add(addFilters);
+            contRoot.add(filtersLabel);
+
+
+            addFilters.addActionListener(action -> {
+                Object in = JOptionPane.showInputDialog(this, "Select a Filter", "Filter Selection", JOptionPane.QUESTION_MESSAGE, null, new Object[]{"BLUE LIGHT", "BLUR", "PIXELATE", "ROTATE", "TRANSPARENCY"}, "");
+                addFilter(OpsFactory.of((String) in));
+            });
+
+            submit.addActionListener(addFeature);
+        } else {
+            if (feature == null) throw new IllegalStateException("Feature cannot be null, when editing");
+            selectedLocation.setText(feature.getSrcFile().toString());
+            nameIn.setText(feature.getName());
+            xoffsetIn.setText(String.valueOf(feature.getXOffset()));
+            yoffsetIn.setText(String.valueOf(feature.getYOffset()));
+            zIndexIn.setText(String.valueOf(feature.getZIndex()));
+
+            //contRoot.revalidate();
+            //contRoot.repaint();
+
+            submit.addActionListener(editFeature);
+        }
+        contRoot.add(new JLabel(""));
+        contRoot.add(new JLabel(""));
+        contRoot.add(submit);
+
+        add(contRoot);
         pack();
         setLocationRelativeTo(null);
         setVisible(true);
         setFocusable(true);
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        //setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
     }
 
     private void addFilter(Filter filter) {

@@ -60,7 +60,8 @@ public class FeatureController {
 
     public BufferedImage getPrev() {
         try {
-            return feature.transform(ImageIO.read(imageCycler.getPrev()));
+            feature.setImage(ImageIO.read(imageCycler.getPrev()));
+            return feature.getImg();
         } catch (IOException e) {
             e.printStackTrace();
             return null;
@@ -69,7 +70,8 @@ public class FeatureController {
 
     public BufferedImage getCur() {
         try {
-            return feature.transform(ImageIO.read(imageCycler.getCur()));
+            feature.setImage(ImageIO.read(imageCycler.getCur()));
+            return feature.getImg();
         } catch (IOException e) {
             e.printStackTrace();
             return null;
@@ -78,7 +80,8 @@ public class FeatureController {
 
     public BufferedImage getNext() {
         try {
-            return feature.transform(ImageIO.read(imageCycler.getNext()));
+            feature.setImage(ImageIO.read(imageCycler.getNext()));
+            return feature.getImg();
         } catch (IOException e) {
             e.printStackTrace();
             return null;
@@ -87,7 +90,8 @@ public class FeatureController {
 
     public BufferedImage getRandom() {
         try {
-            return feature.transform(ImageIO.read(imageCycler.getRandom()));
+            feature.setImage(ImageIO.read(imageCycler.getRandom()));
+            return feature.getImg();
         } catch (IOException e) {
             e.printStackTrace();
             return null;
@@ -98,7 +102,8 @@ public class FeatureController {
         List<BufferedImage> allImages = new ArrayList<>();
         for (File f: imageCycler.getImages()) {
             try {
-                allImages.add(feature.transform(ImageIO.read(f)));
+                feature.setImage(ImageIO.read(f));
+                allImages.add(feature.getImg());
             } catch (IOException e) {
                 e.printStackTrace();
             }

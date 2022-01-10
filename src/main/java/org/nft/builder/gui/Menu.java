@@ -111,7 +111,7 @@ public class Menu extends JPanel {
     }
 
     private void inputDialog(File chosen) {
-        new FeatureSpecInput((Window) contextManager.getBean("window"), this, (FeaturesManager) contextManager.getBean("featuresManager"), chosen, "Feature Setup", Dialog.ModalityType.DOCUMENT_MODAL);
+        new FeatureSpecInput((Window) contextManager.getBean("window"), this, (FeaturesManager) contextManager.getBean("featuresManager"), chosen, null, true, Dialog.ModalityType.DOCUMENT_MODAL);
     }
 
     public JButton saveButton() {
@@ -139,7 +139,6 @@ public class Menu extends JPanel {
         FeatureController controller = new FeatureController(feat, canvas);
 
         canvas.addFeature(feat);
-        System.out.println("Adding feature " + feat.getName() + ", to context");
         contextManager.addBean(controller, feat.getName());
 
         JButton prevButton = controller.getPrevButton();

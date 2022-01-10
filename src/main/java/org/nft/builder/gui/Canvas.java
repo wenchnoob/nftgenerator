@@ -39,9 +39,7 @@ public class Canvas extends JPanel {
     }
 
     public void removeFeature(Feature feat) {
-        System.out.println(features);
         features.remove(feat);
-        System.out.println(features);
         repaint();
     }
 
@@ -122,6 +120,6 @@ public class Canvas extends JPanel {
             img.set(tmp);
         });
 
-        return new Rotations().rotateRight90(img.get());
+        return img.get();
     }
 }
