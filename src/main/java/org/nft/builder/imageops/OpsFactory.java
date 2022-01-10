@@ -5,19 +5,19 @@ import org.nft.builder.imageops.transformations.Rotations;
 
 public class OpsFactory {
 
-    public static Filter of(String name) {
+    public static ImageOp of(String name, String...args) {
         return switch (name) {
-            case "BLUE LIGHT" -> blueLight();
-            case "Rotations" -> rotation();
+            case "BLUE LIGHT" -> blueLight(args);
+            case "Rotation" -> rotation(args);
             default -> null;
         };
     }
 
-    private static BlueLightFilter blueLight() {
+    private static BlueLightFilter blueLight(String...args) {
         return null;
     }
 
-    private static Rotations rotation() {
-        return null;
+    private static Rotations rotation(String...args) {
+        return new Rotations(args[0]);
     }
 }

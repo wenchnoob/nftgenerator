@@ -1,14 +1,13 @@
 package org.nft.builder.imageops;
 
 import lombok.*;
-
 import java.awt.image.BufferedImage;
 
 @Getter
 @Setter
 @RequiredArgsConstructor
 @NoArgsConstructor
-public abstract class Filter {
+public abstract class ImageOp {
 
     @NonNull
     private String name;

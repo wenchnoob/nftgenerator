@@ -3,13 +3,15 @@ package org.nft.builder.imageops.filters;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.nft.builder.imageops.Filter;
+import org.nft.builder.imageops.ImageOp;
+import org.springframework.stereotype.Component;
 
 import java.awt.image.BufferedImage;
 
 @NoArgsConstructor
 @RequiredArgsConstructor
-public class BlueLightFilter extends Filter {
+@Component("Blue Light Filter")
+public class BlueLightFilter extends ImageOp {
 
     @NonNull
     private int intensity;

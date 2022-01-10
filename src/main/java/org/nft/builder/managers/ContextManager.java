@@ -26,6 +26,10 @@ public class ContextManager implements ApplicationContextAware {
         return Arrays.stream(context.getBeanNamesForType(clazz)).map(name -> context.getBean(name)).collect(Collectors.toSet());
     }
 
+    public String[] getBeanNames(Class clazz) {
+        return context.getBeanNamesForType(clazz);
+    }
+
     public void addBean(Object bean, String name) {
         AutowireCapableBeanFactory bf = context.getAutowireCapableBeanFactory();
         bf.initializeBean(bean, name);

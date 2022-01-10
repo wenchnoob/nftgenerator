@@ -2,7 +2,7 @@ package org.nft.builder.models;
 
 
 import lombok.*;
-import org.nft.builder.imageops.Filter;
+import org.nft.builder.imageops.ImageOp;
 import org.nft.builder.imageops.utils.IO;
 
 import java.awt.*;
@@ -32,7 +32,8 @@ public class Feature {
 
     private int type;
 
-    private List<Filter> filters = new ArrayList<>();
+    @NonNull
+    private List<ImageOp> imageOps;
 
     private boolean isDirty;
 
@@ -47,7 +48,7 @@ public class Feature {
 
         AtomicReference<BufferedImage> filteredImage = new AtomicReference<>(IO.copy(originalImage));
 
-        filters.stream().parallel().forEach(filter -> {
+        imageOps.stream().parallel().forEach(filter -> {
             filteredImage.set(filter.apply(filteredImage.get()));
         });
 
@@ -66,12 +67,14 @@ public class Feature {
         this.isDirty = true;
     }
 
-    public void addFilter(Filter filter) {
-        filters.add(filter);
+    public void addFilter(ImageOp imageOp) {
+        imageOps.add(imageOp);
+        isDirty = true;
     }
 
-    public void removeFilter(Filter filter) {
-        filters.remove(filter);
+    public void removeFilter(ImageOp filter) {
+        imageOps.remove(filter);
+        isDirty = true;
     }
 
     public File getSrcFile() {

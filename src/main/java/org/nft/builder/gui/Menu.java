@@ -111,7 +111,7 @@ public class Menu extends JPanel {
     }
 
     private void inputDialog(File chosen) {
-        new FeatureSpecInput((Window) contextManager.getBean("window"), this, (FeaturesManager) contextManager.getBean("featuresManager"), chosen, null, true, Dialog.ModalityType.DOCUMENT_MODAL);
+        new FeatureSpecInput((Window) contextManager.getBean("window"), this, (FeaturesManager) contextManager.getBean("featuresManager"), chosen, null, true, Dialog.ModalityType.DOCUMENT_MODAL, contextManager);
     }
 
     public JButton saveButton() {

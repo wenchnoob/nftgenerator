@@ -34,7 +34,7 @@ public class FeatureManagerUI extends JDialog {
         new FeatureSpecInput((Window) contextManager.getBean("window"),
                 menu,
                 (FeaturesManager) contextManager.getBean("featuresManager"),
-                feature.getSrcFile(), feature, false, Dialog.ModalityType.DOCUMENT_MODAL);
+                feature.getSrcFile(), feature, false, Dialog.ModalityType.DOCUMENT_MODAL, contextManager);
         featuresManager.removeManagedFeature(featureName);
         featuresManager.addManagedFeature(feature);
         updateMenu();

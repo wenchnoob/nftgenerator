@@ -3,8 +3,9 @@ package org.nft.builder.gui.input.compound;
 import org.nft.builder.controllers.FeaturesManager;
 import org.nft.builder.gui.input.InputFactory;
 import org.nft.builder.imageops.OpsFactory;
-import org.nft.builder.imageops.Filter;
+import org.nft.builder.imageops.ImageOp;
 import org.nft.builder.imageops.utils.IO;
+import org.nft.builder.managers.ContextManager;
 import org.nft.builder.models.Feature;
 
 import javax.swing.*;
@@ -47,15 +48,14 @@ public class FeatureSpecInput extends JDialog {
     JButton addFilters = new JButton("Add Filters");
     JLabel filtersLabel = new JLabel("Filters: ");
 
-    List<Filter> filters = new ArrayList<>();
+    List<ImageOp> imageOps = new ArrayList<>();
 
     private ActionListener addFeature = action -> {
         String name = nameIn.getText();
         int xOffset = Integer.parseInt(xoffsetIn.getText());
         int yOffset = Integer.parseInt(yoffsetIn.getText());
         int zIndex = Integer.parseInt(zIndexIn.getText());
-        Feature feat = new Feature(srcFile, name, xOffset, yOffset, zIndex, IO.emptyImage());
-
+        Feature feat = new Feature(srcFile, name, xOffset, yOffset, zIndex, imageOps, IO.emptyImage());
         featuresManager.addManagedFeature(feat);
         dispose();
     };
@@ -78,7 +78,7 @@ public class FeatureSpecInput extends JDialog {
         dispose();
     };
 
-    public FeatureSpecInput(Window win, Menu menu, FeaturesManager featuresManager, File srcFile, Feature feature, boolean isNew, Dialog.ModalityType modalityType) {
+    public FeatureSpecInput(Window win, Menu menu, FeaturesManager featuresManager, File srcFile, Feature feature, boolean isNew, Dialog.ModalityType modalityType, ContextManager contextManager) {
         super(win, (isNew ? "Add " : "Edit ") + "Feature", modalityType);
         this.menu = menu;
         this.featuresManager = featuresManager;
@@ -111,8 +111,26 @@ public class FeatureSpecInput extends JDialog {
 
 
             addFilters.addActionListener(action -> {
-                Object in = JOptionPane.showInputDialog(this, "Select a Filter", "Filter Selection", JOptionPane.QUESTION_MESSAGE, null, new Object[]{"BLUE LIGHT", "BLUR", "PIXELATE", "ROTATE", "TRANSPARENCY"}, "");
-                addFilter(OpsFactory.of((String) in));
+                String[] filters = contextManager.getBeanNames(ImageOp.class);
+                Object in = JOptionPane.showInputDialog(this, "Select a Filter", "Filter Selection", JOptionPane.QUESTION_MESSAGE, null, filters, "");
+                if (in == null) return;
+                String input = (String) in;
+                String[] args;
+
+                switch (input) {
+                    case "Blue Light Filter" -> {
+                        args = new String[1];
+                    }
+                    case "Rotation" -> {
+                        args = new String[1];
+                        Object rot = JOptionPane.showInputDialog(this, "Choose Degree of Rotation", "Config", JOptionPane.QUESTION_MESSAGE, null, new String[]{"90", "180", "270", "360"}, "");
+                        if (rot == null) args[0] = "360";
+                        else args[0] = (String)rot;
+                    }
+                    default -> { args = new String[0];}
+                }
+
+                addFilter(OpsFactory.of((String) in, args));
             });
 
             submit.addActionListener(addFeature);
@@ -141,8 +159,10 @@ public class FeatureSpecInput extends JDialog {
         //setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
     }
 
-    private void addFilter(Filter filter) {
-        filters.add(filter);
-        filtersLabel.setText(filtersLabel.getText() + filter.getClass().getName() + ", ");
+    private void addFilter(ImageOp imageOp) {
+        System.out.println(imageOp);
+        if (imageOp == null) return;
+        imageOps.add(imageOp);
+        filtersLabel.setText(filtersLabel.getText() + imageOp.getClass().getName() + ", ");
     }
 }
