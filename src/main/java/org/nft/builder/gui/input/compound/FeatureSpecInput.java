@@ -101,6 +101,8 @@ public class FeatureSpecInput extends JDialog {
 
         if (isNew) {
             selectedLocation.setText(srcFile.getAbsolutePath());
+            String[] parts = srcFile.getAbsolutePath().split("/");
+            nameIn.setText(parts[parts.length - 1]);
 
             selectedLocation.setBorder(new EmptyBorder(10, 10, 10, 10));
             locationLabel.setBorder(new EmptyBorder(10, 10, 10, 10));
@@ -115,22 +117,8 @@ public class FeatureSpecInput extends JDialog {
                 Object in = JOptionPane.showInputDialog(this, "Select a Filter", "Filter Selection", JOptionPane.QUESTION_MESSAGE, null, filters, "");
                 if (in == null) return;
                 String input = (String) in;
-                String[] args;
-
-                switch (input) {
-                    case "Blue Light Filter" -> {
-                        args = new String[1];
-                    }
-                    case "Rotation" -> {
-                        args = new String[1];
-                        Object rot = JOptionPane.showInputDialog(this, "Choose Degree of Rotation", "Config", JOptionPane.QUESTION_MESSAGE, null, new String[]{"90", "180", "270", "360"}, "");
-                        if (rot == null) args[0] = "360";
-                        else args[0] = (String)rot;
-                    }
-                    default -> { args = new String[0];}
-                }
-
-                addFilter(OpsFactory.of((String) in, args));
+                ImageOp op = (ImageOp) contextManager.getBean(input);
+                addFilter(OpsFactory.of((String) in, op.getUserConfigs(this)));
             });
 
             submit.addActionListener(addFeature);
@@ -160,7 +148,6 @@ public class FeatureSpecInput extends JDialog {
     }
 
     private void addFilter(ImageOp imageOp) {
-        System.out.println(imageOp);
         if (imageOp == null) return;
         imageOps.add(imageOp);
         filtersLabel.setText(filtersLabel.getText() + imageOp.getClass().getName() + ", ");

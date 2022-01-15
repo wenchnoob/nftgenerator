@@ -1,6 +1,8 @@
 package org.nft.builder.imageops;
 
 import lombok.*;
+
+import java.awt.*;
 import java.awt.image.BufferedImage;
 
 @Getter
@@ -14,4 +16,6 @@ public abstract class ImageOp {
 
     public abstract BufferedImage apply(BufferedImage targ);
     public abstract BufferedImage applyInPlace(BufferedImage targ);
+
+    public abstract String[] getUserConfigs(Component component);
 }

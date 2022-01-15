@@ -7,14 +7,14 @@ public class OpsFactory {
 
     public static ImageOp of(String name, String...args) {
         return switch (name) {
-            case "BLUE LIGHT" -> blueLight(args);
+            case "Blue Light Filter" -> blueLight(args);
             case "Rotation" -> rotation(args);
             default -> null;
         };
     }
 
     private static BlueLightFilter blueLight(String...args) {
-        return null;
+        return new BlueLightFilter(Integer.valueOf(args[0]));
     }
 
     private static Rotations rotation(String...args) {

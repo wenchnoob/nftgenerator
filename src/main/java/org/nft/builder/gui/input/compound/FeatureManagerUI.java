@@ -11,6 +11,8 @@ import org.springframework.stereotype.Component;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.function.Consumer;
@@ -59,7 +61,7 @@ public class FeatureManagerUI extends JDialog {
 
     public void updateMenu() {
         panel.removeAll();
-        panel.setLayout(new GridLayout(0, 3));
+        panel.setLayout(new GridLayout(0, 4));
         featuresManager.getManagedFeatures().forEach(this::addFeature);
         panel.invalidate();
         this.pack();
@@ -80,6 +82,20 @@ public class FeatureManagerUI extends JDialog {
             {
                 addActionListener(action -> {
                     remove.accept(name);
+                });
+            }
+        });
+        panel.add(new JToggleButton("Sort On") {
+            {
+                setSelected(feature.isSortedOn());
+                addItemListener(e -> {
+                    if (e.getStateChange() == ItemEvent.SELECTED) {
+                        feature.sortOn(true);
+                    } else {
+                        if (e.getStateChange() == ItemEvent.DESELECTED) {
+                            feature.sortOn(false);
+                        }
+                    }
                 });
             }
         });

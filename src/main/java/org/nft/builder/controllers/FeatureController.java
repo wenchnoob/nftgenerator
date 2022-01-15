@@ -12,7 +12,9 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Hashtable;
 import java.util.List;
+import java.util.Map;
 
 @Getter
 public class FeatureController {
@@ -109,5 +111,18 @@ public class FeatureController {
             }
         }
         return allImages;
+    }
+
+    public Map<String, BufferedImage> allImagesWithNames() {
+        Hashtable<String, BufferedImage> repo = new Hashtable<>();
+        for (File f: imageCycler.getImages()) {
+            try {
+                feature.setImage(ImageIO.read(f));
+                repo.put(f.getName(), feature.getImg());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return repo;
     }
 }

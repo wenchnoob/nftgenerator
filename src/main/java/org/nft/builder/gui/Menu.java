@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import javax.swing.*;
+import javax.swing.filechooser.FileFilter;
 import java.awt.*;
 import java.io.File;
 import java.util.HashSet;
@@ -45,6 +46,7 @@ public class Menu extends JPanel {
         setPreferredSize(new Dimension(500, 100));
 
         add(manageFeaturesButton());
+        add(addImageLayer());
         add(addFeatureButton());
         add(saveButton());
         add(shuffleButton());
@@ -75,6 +77,39 @@ public class Menu extends JPanel {
                     if (chosen == null) return;
                     if (!chosen.exists()) chosen.mkdir();
                     if (chosen.isDirectory()) canvas.shuffleAll(chosen);
+                });
+            }
+        };
+    }
+
+    public JButton addImageLayer() {
+        return new JButton("Add Image") {
+            {
+                addActionListener(action -> {
+                    JOptionPane.showMessageDialog(null, "First choose the folder that all the images for your feature are in.");
+                    JFileChooser chooser = new JFileChooser();
+                    chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+                    chooser.setFileFilter(new FileFilter() {
+                        @Override
+                        public boolean accept(File f) {
+                            for (String extension : new String[]{"jpg", "jpeg", "png", "gif"}) {
+                                if (f.getName().toLowerCase().endsWith(extension))
+                                    return true;
+                            }
+                            return false;
+                        }
+
+                        @Override
+                        public String getDescription() {
+                            return "This filter, filters for java supported image files.";
+                        }
+                    });
+                    chooser.setCurrentDirectory(new File(new File("./").getAbsolutePath() + "/src/main/resources/images"));
+                    chooser.showOpenDialog(null);
+                    File chosen = chooser.getSelectedFile();
+
+                    if (chosen == null) return;
+                    inputDialog(chosen);
                 });
             }
         };

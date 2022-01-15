@@ -9,7 +9,6 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -41,6 +40,8 @@ public class Feature {
     private BufferedImage originalImage;
 
     private BufferedImage img;
+
+    private boolean sortOn = false;
 
     public BufferedImage getImg() {
         if (originalImage == null) throw new IllegalArgumentException("Original Image not set for this feature.");
@@ -126,5 +127,13 @@ public class Feature {
     public void setType(int type) {
         this.type = type;
         this.isDirty = true;
+    }
+
+    public boolean isSortedOn() {
+        return this.sortOn;
+    }
+
+    public void sortOn(boolean sortOn) {
+        this.sortOn = sortOn;
     }
 }

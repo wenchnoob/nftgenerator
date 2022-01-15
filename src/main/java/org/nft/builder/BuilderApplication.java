@@ -11,6 +11,7 @@ public class BuilderApplication {
     private static Logger LOGGER = LoggerFactory.getLogger(BuilderApplication.class);
 
     public static void main(String[] args) throws InterruptedException {
+        System.setProperty("java.awt.headless", "false");
         SpringApplication.run(BuilderApplication.class);
     }
 

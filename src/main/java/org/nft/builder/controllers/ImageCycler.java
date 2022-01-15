@@ -21,13 +21,14 @@ public class ImageCycler {
     private Cycler cycler;
 
     @Setter(AccessLevel.NONE)
-    private List<File> images = new ArrayList<>();
+    private List<File> images;
 
     public ImageCycler(File srcFile) {
-        if (!srcFile.isDirectory()) throw new IllegalArgumentException("The root of the ImageCycler must be a directory");
+        //if (!srcFile.isDirectory()) throw new IllegalArgumentException("The root of the ImageCycler must be a directory");
 
         List<File> images = new ArrayList<>();
-        processDirRecursively(srcFile, images);
+        if (srcFile.isDirectory()) processDirRecursively(srcFile, images);
+        else images.add(srcFile);
 
         this.images = images;
         this.srcFile = srcFile;
